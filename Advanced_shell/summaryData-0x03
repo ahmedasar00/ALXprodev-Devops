@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# Define the name of the output CSV file
+CSV_FILE="pokemon_report.csv"
+
+# 1. Create the CSV file and write the header
+echo "Name,Height (m),Weight (kg)" > "$CSV_FILE"
+
+# Initialize variables for calculating the averages
+TOTAL_HEIGHT=0
+TOTAL_WEIGHT=0
+POKEMON_COUNT=0
+
+# 2. Loop through all JSON files in the current directory
+# Note: Assumes JSON files are available in the working directory.
+for file in *.json; do
+    if [ -f "$file" ]; then
+        # Use jq to extract the name, height, and weight
+        NAME=$(jq -r '.name' "$file")
+
+        # Extract Height (in decimeters) and convert to meters (divide by 10)
+        HEIGHT_DM=$(jq -r '.height' "$file")
+        # Use awk for floating-point division
+        HEIGHT_M=$(awk "BEGIN {print $HEIGHT_DM / 10}")
+
+        # Extract Weight (in hectograms) and convert to kilograms (divide by 10)
+        WEIGHT_HG=$(jq -r '.weight' "$file")
+        # Use awk for floating-point division
+        WEIGHT_KG=$(awk "BEGIN {print $WEIGHT_HG / 10}")
+
+        # Append the data line to the CSV file
+        echo "$NAME,$HEIGHT_M,$WEIGHT_KG" >> "$CSV_FILE"
+
+        # Accumulate totals for average calculation
+        TOTAL_HEIGHT=$(awk "BEGIN {print $TOTAL_HEIGHT + $HEIGHT_M}")
+        TOTAL_WEIGHT=$(awk "BEGIN {print $TOTAL_WEIGHT + $WEIGHT_KG}")
+        POKEMON_COUNT=$((POKEMON_COUNT + 1))
+    fi
+done
+
+# 3. Calculate and display the averages
+echo "CSV Report generated at: $CSV_FILE"
+echo
+
+# Display the content of the generated CSV report
+cat "$CSV_FILE"
+echo
+
+if [ "$POKEMON_COUNT" -gt 0 ]; then
+    # Calculate Average Height, formatted to two decimal places
+    AVERAGE_HEIGHT=$(awk "BEGIN {printf \"%.2f\", $TOTAL_HEIGHT / $POKEMON_COUNT}")
+
+    # Calculate Average Weight, formatted to two decimal places
+    AVERAGE_WEIGHT=$(awk "BEGIN {printf \"%.2f\", $TOTAL_WEIGHT / $POKEMON_COUNT}")
+
+    # Display the final summary
+    echo "Average Height: $AVERAGE_HEIGHT m"
+    echo "Average Weight: $AVERAGE_WEIGHT kg"
+else
+    echo "No Pokémon JSON files found to process."
+fi
