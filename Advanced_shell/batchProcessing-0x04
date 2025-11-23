@@ -1,29 +1,34 @@
 #!/usr/bin/env bash
 
 POKEMON_LIST="bulbasaur ivysaur venusaur charmander charmeleon"
-
 OUTPUT_DIR="pokemon_data"
 mkdir -p "$OUTPUT_DIR"
 
 API_BASE="https://pokeapi.co/api/v2/pokemon"
 
-DELAY=1
+echo "Starting batch Pokémon data retrieval in parallel..."
 
-echo "Starting batch Pokémon data retrieval..."
+# function to fetch a single pokemon
+fetch_pokemon() {
+    local pokemon=$1
+    local url="$API_BASE/$pokemon"
+    local output_file="$OUTPUT_DIR/$pokemon.json"
 
-for pokemon in $POKEMON_LIST; do
-    URL="$API_BASE/$pokemon"
-    OUTPUT_FILE="$OUTPUT_DIR/$pokemon.json"
-    
     echo "Fetching data for $pokemon..."
     
-    if curl -sS "$URL" -o "$OUTPUT_FILE"; then
-        echo "Saved data to $OUTPUT_FILE ✅"
+    if curl -sS "$url" -o "$output_file"; then
+        echo "Saved data to $output_file ✅"
     else
         echo "Error fetching data for $pokemon ❌"
     fi
-    
-    sleep "$DELAY"
+}
+
+# loop through each pokemon and run fetch in background
+for pokemon in $POKEMON_LIST; do
+    fetch_pokemon "$pokemon" &
 done
 
-echo "Data retrieval complete."
+# wait for all background processes to finish
+wait
+
+echo "All Pokémon data retrieval complete."
