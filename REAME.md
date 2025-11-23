@@ -102,6 +102,7 @@ chmod +x data_extraction_automation-0x01
 
 ```
 Pikachu is of type Electric, weighs 6kg, and is 0.4m tall.
+
 ```
 
 ---
@@ -248,11 +249,3 @@ cd ..
 - Rate limiting is implemented to be respectful to the API
 - All scripts are executable and can be run independently
 - The project demonstrates both sequential and parallel processing approaches
-
-## License
-
-This project is part of an educational curriculum and is intended for learning purposes.
-
-## Author
-
-Created as part of the ALX DevOps Advanced Shell Scripting curriculum.
