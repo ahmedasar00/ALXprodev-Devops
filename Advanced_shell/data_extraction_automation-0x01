@@ -1,0 +1,68 @@
+#!/bin/bash
+#
+# Objective: Extract Pokémon's name, height, weight, and type from data.json
+# using only jq, awk, or sed, and format the output.
+#
+# Assumes data.json exists and contains the Pokémon API response.
+
+DATA_FILE="data.json"
+
+# Check if the data file exists
+if [ ! -f "$DATA_FILE" ]; then
+    echo "Error: Data file '$DATA_FILE' not found. Please run Task 0 first to create it."
+    exit 1
+fi
+
+# 1. Extraction using 'jq' to get all required fields in a specific, pipe-delimited format:
+#    - .name
+#    - .height (will be in decimetres)
+#    - .weight (will be in hectograms)
+#    - .types[0].type.name (gets the first type)
+#
+# We use join("|") to explicitly separate fields with a pipe.
+EXTRACTED_DATA=$(jq -r '[.name, .height, .weight, .types[0].type.name] | join("|")' "$DATA_FILE")
+
+# Check if jq returned valid data
+if [ -z "$EXTRACTED_DATA" ]; then
+    echo "Error: Could not extract data from $DATA_FILE. Check file content (it might contain an error message)."
+    exit 1
+fi
+
+# 2. Parsing the delimited data using 'awk'
+# We use awk to assign the fields, perform calculations (division by 10 for height/weight), and format the text.
+
+# The -F flag for awk is not needed here as we are using the 'split' function inside BEGIN block.
+# We pass the data into the 'data' variable for awk.
+awk -v data="$EXTRACTED_DATA" '
+BEGIN {
+    # Split the input string using the pipe "|" delimiter
+    split(data, fields, "|");
+
+    # Assign values
+    name = fields[1];
+    height_dm = fields[2];
+    weight_hg = fields[3];
+    type_name = fields[4];
+
+    # Convert height from decimetres (dm) to meters (m): divide by 10
+    height_m = height_dm / 10;
+
+    # Convert weight from hectograms (hg) to kilograms (kg): divide by 10
+    weight_kg = weight_hg / 10;
+
+    # Capitalize the first letter of the type name (e.g., "electric" -> "Electric")
+    type_formatted = toupper(substr(type_name, 1, 1)) substr(type_name, 2);
+    
+    # Capitalize the Pokemon name (e.g., "pikachu" -> "Pikachu")
+    name_formatted = toupper(substr(name, 1, 1)) substr(name, 2);
+
+    # Print the final formatted string
+    printf "%s is of type %s, weighs %.0fkg, and is %.1fm tall.\n", 
+           name_formatted, 
+           type_formatted, 
+           weight_kg, 
+           height_m;
+}'
+
+# The output format is: Pikachu is of type Electric, weighs 6kg, and is 0.4m tall.
+exit 0
