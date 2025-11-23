@@ -1,0 +1,11 @@
+Name,Height (m),Weight (kg)
+bulbasaur,0.7,6.9
+charmander,0.6,8.5
+jigglypuff,0.5,5.5
+pikachu,0.4,6
+squirtle,0.5,9
+
+--- Summary Calculations ---
+Total Pokémon Processed: 5
+Average Height: 0.54 m
+Average Weight: 7.18 kg
