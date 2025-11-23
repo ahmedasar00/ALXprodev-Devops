@@ -35,6 +35,13 @@ done
 echo "Currently running background jobs:"
 jobs
 
+# check background processes using kill -0 (non-destructive)
+for pid in "${pids[@]}"; do
+    if kill -0 $pid 2>/dev/null; then
+        echo "Process $pid is running"
+    fi
+done
+
 # wait for all background processes to finish
 for pid in "${pids[@]}"; do
     wait $pid
